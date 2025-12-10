@@ -56,16 +56,16 @@ git push -u origin main
 - **Build Command:** `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
 - **Start Command:** `gunicorn mpesa_project.wsgi:application`
 
-### 4. Environment Variables
+### 4. Environment Variables (Production)
 
-Add these in Render Dashboard → Environment:
+Set these in Render Dashboard → Environment:
 
 ```
 DJANGO_SECRET_KEY=<generate-random-50-char-string>
 DEBUG=False
 ALLOWED_HOSTS=your-app-name.onrender.com
-LIPANA_SECRET_KEY=lip_sk_live_1ed27384b2d8a8327f64b730f0ae24578cae5b27fd2761564465f4707a49d00b
-LIPANA_PUBLISHABLE_KEY=lip_pk_live_d25e520310614c8fa2a9ad6791f8f46d048853c812779c12530b4b79120fc9c2
+LIPANA_SECRET_KEY=<your-actual-lipana-secret-key>
+LIPANA_PUBLISHABLE_KEY=<your-actual-lipana-publishable-key>
 LIPANA_API_BASE=https://api.lipana.io
 LIPANA_ENABLE_MOCK=False
 LIPANA_SKIP_DNS_CHECK=False

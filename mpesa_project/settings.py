@@ -28,14 +28,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LIPANA_PUBLISHABLE_KEY = os.environ.get(
-    'LIPANA_PUBLISHABLE_KEY',
-    'lip_pk_live_d25e520310614c8fa2a9ad6791f8f46d048853c812779c12530b4b79120fc9c2'
-)
-LIPANA_SECRET_KEY = os.environ.get(
-    'LIPANA_SECRET_KEY',
-    'lip_sk_live_1ed27384b2d8a8327f64b730f0ae24578cae5b27fd2761564465f4707a49d00b'
-)
+LIPANA_PUBLISHABLE_KEY = os.environ.get('LIPANA_PUBLISHABLE_KEY', '')
+LIPANA_SECRET_KEY = os.environ.get('LIPANA_SECRET_KEY', '')
 LIPANA_API_BASE = os.environ.get('LIPANA_API_BASE', 'https://api.lipana.io')
 LIPANA_SKIP_DNS_CHECK = os.environ.get('LIPANA_SKIP_DNS_CHECK', 'True') == 'True'
 LIPANA_ENABLE_MOCK = os.environ.get(
