@@ -1,6 +1,15 @@
 import os
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-test')
+def _get_setting(name, default=None, required=False):
+    val = os.environ.get(name)
+    if val:
+        return val
+    if required:
+        raise RuntimeError(f"Missing required setting: {name}")
+    return default
+
+SECRET_KEY = _get_setting('DJANGO_SECRET_KEY', required=True)
+
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
@@ -28,14 +37,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LIPANA_PUBLISHABLE_KEY = os.environ.get('LIPANA_PUBLISHABLE_KEY', '')
-LIPANA_SECRET_KEY = os.environ.get('LIPANA_SECRET_KEY', '')
-LIPANA_API_BASE = os.environ.get('LIPANA_API_BASE', 'https://api.lipana.io')
+LIPANA_PUBLISHABLE_KEY = _get_setting('LIPANA_PUBLISHABLE_KEY', required=True)
+LIPANA_SECRET_KEY = _get_setting('LIPANA_SECRET_KEY', required=True)
+LIPANA_API_BASE = _get_setting('LIPANA_API_BASE', 'https://api.lipana.io')
 LIPANA_SKIP_DNS_CHECK = os.environ.get('LIPANA_SKIP_DNS_CHECK', 'True') == 'True'
 LIPANA_ENABLE_MOCK = os.environ.get(
     'LIPANA_ENABLE_MOCK',
     'True' if DEBUG else 'False'
 ) == 'True'
+
+if not DEBUG:
+    if not SECRET_KEY or SECRET_KEY == 'dev-secret-key':
+        raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
+    if not LIPANA_SECRET_KEY:
+        raise RuntimeError("LIPANA_SECRET_KEY must be set in production")
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 

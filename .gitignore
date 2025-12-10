@@ -1,15 +1,9 @@
 *.pyc
 __pycache__/
-*.pyo
-*.pyd
-.Python
 db.sqlite3
-.env
-.env.local
-.env.*.local
 venv/
-env/
 ENV/
+env/
 staticfiles/
 .vscode/
 .idea/
