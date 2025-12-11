@@ -1,40 +1,8 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}M-Pesa Payment Administration{% endblock %}
-
 {% block extrahead %}
+    {{ block.super }}
     <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
-    <style>
-        :root {
-            --primary-color: #1a73e8;
-            --success-color: #28a745;
-        }
-    </style>
 {% endblock %}
 
-{% block branding %}
-    <h1 id="site-name">
-        <a href="{% url 'admin:index' %}">
-            🚀 M-Pesa Payment Admin
-        </a>
-    </h1>
-{% endblock %}
-
-{% block site_header %}
-    <div id="header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1 style="margin: 0; color: white;">💳 M-Pesa Payment System</h1>
-                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Transaction Management Dashboard</p>
-            </div>
-            <div style="text-align: right;">
-                {% if user.is_staff %}
-                    <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 14px;">
-                        Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong>
-                    </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-{% endblock %}
