@@ -46,6 +46,7 @@ MIDDLEWARE = [
 LIPANA_PUBLISHABLE_KEY = _get_setting('LIPANA_PUBLISHABLE_KEY', required=True)
 LIPANA_SECRET_KEY = _get_setting('LIPANA_SECRET_KEY', required=True)
 LIPANA_API_BASE = _get_setting('LIPANA_API_BASE', 'https://api.lipana.io')
+LIPANA_STK_PATH = _get_setting('LIPANA_STK_PATH', '/v1/stk/push')
 LIPANA_SKIP_DNS_CHECK = os.environ.get('LIPANA_SKIP_DNS_CHECK', 'True') == 'True'
 LIPANA_ENABLE_MOCK = os.environ.get(
     'LIPANA_ENABLE_MOCK',

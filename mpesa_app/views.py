@@ -51,10 +51,12 @@ def initiate_stk_push(request):
     except ValueError:
         return JsonResponse({"error": "Amount must be a number"}, status=400)
 
-    # Lipana STK Push API endpoint
+    # Lipana STK Push API endpoint (configurable path)
     api_base = settings.LIPANA_API_BASE.rstrip("/")
-    # If API_BASE already includes /v1, use /stk/push; otherwise use /v1/stk/push
-    url = f"{api_base}/stk/push" if "/v1" in api_base else f"{api_base}/v1/stk/push"
+    path = settings.LIPANA_STK_PATH
+    if not path.startswith("/"):
+        path = f"/{path}"
+    url = f"{api_base}{path}"
     
     headers = {
         "Authorization": f"Bearer {settings.LIPANA_SECRET_KEY}",
