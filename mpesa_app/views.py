@@ -94,8 +94,18 @@ def initiate_stk_push(request):
                 "details": str(e),
             }, status=503)
 
+    # Create transaction record immediately for instant tracking
+    transaction = MpesaTransaction.objects.create(
+        phone=phone,
+        amount=amount,
+        reference=reference,
+        transaction_id=f"PENDING-{phone}-{int(amount)}",
+        status="pending",
+    )
+    
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=30, verify=True)
+        # Use shorter timeout for faster response (10s instead of 30s)
+        response = requests.post(url, json=payload, headers=headers, timeout=10, verify=True)
         
         try:
             response_data = response.json()
@@ -119,14 +129,21 @@ def initiate_stk_push(request):
         
         logger.info(f"Lipana API Response: {response.status_code} - {response_data}")
         
-        if response.status_code in [200, 201]:
-            return JsonResponse(response_data, status=response.status_code)
-        else:
-            return JsonResponse(response_data, status=response.status_code)
+        # Update transaction with real transaction ID from API
+        if response.status_code in [200, 201] and response_data.get('data', {}).get('transactionId'):
+            transaction.transaction_id = response_data['data']['transactionId']
+            transaction.result_description = response_data.get('data', {}).get('message', 'STK push sent')
+            transaction.save(update_fields=['transaction_id', 'result_description'])
+        
+        # Return immediately - don't wait for any other processing
+        return JsonResponse(response_data, status=response.status_code)
             
     except requests.exceptions.Timeout:
         logger.error("Lipana API timeout")
-        return JsonResponse({"error": "Request timeout. Try again."}, status=504)
+        transaction.status = "timeout"
+        transaction.result_description = "Request timeout - please try again"
+        transaction.save(update_fields=['status', 'result_description'])
+        return JsonResponse({"error": "Request timeout. Try again.", "transaction_id": transaction.id}, status=504)
     except requests.exceptions.ConnectionError as e:
         logger.error(f"Connection error: {str(e)}")
         root = getattr(e, "__cause__", None)
@@ -146,13 +163,20 @@ def initiate_stk_push(request):
                 "error": f"Cannot resolve Lipana API host ({hostname}). Check DNS/network connectivity, set LIPANA_API_BASE to a reachable host, or set LIPANA_SKIP_DNS_CHECK=True.",
                 "details": str(e),
             }, status=503)
+        transaction.status = "failed"
+        transaction.result_description = f"Network error: {str(e)[:100]}"
+        transaction.save(update_fields=['status', 'result_description'])
         return JsonResponse({
             "error": "Network error. Check your internet connection and Lipana API availability.",
             "details": str(e),
+            "transaction_id": transaction.id
         }, status=503)
     except requests.exceptions.RequestException as e:
         logger.error(f"Request error: {str(e)}")
-        return JsonResponse({"error": "Upstream request failed", "details": str(e)}, status=502)
+        transaction.status = "failed"
+        transaction.result_description = f"Request failed: {str(e)[:100]}"
+        transaction.save(update_fields=['status', 'result_description'])
+        return JsonResponse({"error": "Upstream request failed", "details": str(e), "transaction_id": transaction.id}, status=502)
 
 
 @csrf_exempt

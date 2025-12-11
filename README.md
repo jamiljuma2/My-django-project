@@ -68,6 +68,41 @@ curl -X POST http://localhost:8000/api/stk-push/ \
 
 Visit `http://localhost:8000/admin/` and login to view M-Pesa transactions.
 
+## User Groups & Permissions
+
+The system includes two predefined user groups with specific permissions:
+
+### Student Group
+Students can:
+- ✓ Add assignments
+- ✓ Change assignments  
+- ✓ View assignments
+- ✓ Add M-Pesa payments
+- ✓ View M-Pesa transactions
+
+### Writer Group
+Writers can:
+- ✓ View assignments
+- ✓ Add submissions
+- ✓ Change submissions
+- ✓ View submissions
+- ✓ Add subscriptions
+- ✓ View subscriptions
+
+### Setup Groups
+Run this command to create the groups and assign permissions:
+```bash
+python manage.py setup_groups
+```
+
+### Assign Users to Groups
+1. Go to Django Admin at `/admin/`
+2. Click on **Users**
+3. Select a user
+4. Scroll to **Permissions** section
+5. In **Groups**, select **Student** or **Writer**
+6. Click **Save**
+
 ## Production Deployment
 
 Set environment variables:

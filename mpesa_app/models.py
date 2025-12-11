@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, RegexValidator
+from django.contrib.auth.models import User
 from django.utils import timezone
 
 
@@ -105,3 +106,99 @@ class MpesaTransaction(models.Model):
             self.result_description = result_description
         self.save()
 
+
+class Assignment(models.Model):
+    """Student assignments with payment tracking."""
+    
+    title = models.CharField(max_length=200, help_text="Assignment title")
+    description = models.TextField(help_text="Assignment description")
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="assignments_created"
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="assignments", null=True, blank=True
+    )
+    due_date = models.DateTimeField(help_text="Assignment deadline")
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, help_text="Payment amount in KES"
+    )
+    is_paid = models.BooleanField(default=False)
+    payment_transaction = models.ForeignKey(
+        MpesaTransaction, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Assignment"
+        verbose_name_plural = "Assignments"
+
+    def __str__(self):
+        return f"{self.title} - {self.student.username if self.student else 'Unassigned'}"
+
+
+class Submission(models.Model):
+    """Assignment submissions by writers."""
+    
+    STATUS_CHOICES = [
+        ("pending", "Pending Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("revision", "Needs Revision"),
+    ]
+    
+    assignment = models.ForeignKey(
+        Assignment, on_delete=models.CASCADE, related_name="submissions"
+    )
+    writer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="submissions"
+    )
+    content = models.TextField(help_text="Submission content")
+    file_url = models.URLField(blank=True, null=True, help_text="Attachment URL")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="pending"
+    )
+    notes = models.TextField(blank=True, help_text="Reviewer notes")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+        verbose_name = "Submission"
+        verbose_name_plural = "Submissions"
+
+    def __str__(self):
+        return f"Submission for {self.assignment.title} by {self.writer.username}"
+
+
+class Subscription(models.Model):
+    """Writer subscription plans."""
+    
+    PLAN_CHOICES = [
+        ("basic", "Basic Plan"),
+        ("premium", "Premium Plan"),
+        ("pro", "Professional Plan"),
+    ]
+    
+    writer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="subscriptions"
+    )
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_transaction = models.ForeignKey(
+        MpesaTransaction, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(help_text="Subscription expiry date")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Subscription"
+        verbose_name_plural = "Subscriptions"
+
+    def __str__(self):
+        return f"{self.writer.username} - {self.get_plan_display()} ({self.start_date.date()})"
