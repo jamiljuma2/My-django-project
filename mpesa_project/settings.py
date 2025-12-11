@@ -17,7 +17,9 @@ SECRET_KEY = _get_setting('DJANGO_SECRET_KEY', required=True)
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(',') if h.strip()] or ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(',') if h.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'my-django-project-1-0k73.onrender.com']
 
 INSTALLED_APPS = [
     'mpesa_app',
