@@ -53,7 +53,8 @@ def initiate_stk_push(request):
 
     # Lipana STK Push API endpoint
     api_base = settings.LIPANA_API_BASE.rstrip("/")
-    url = f"{api_base}/v1/stk/push"
+    # If API_BASE already includes /v1, use /stk/push; otherwise use /v1/stk/push
+    url = f"{api_base}/stk/push" if "/v1" in api_base else f"{api_base}/v1/stk/push"
     
     headers = {
         "Authorization": f"Bearer {settings.LIPANA_SECRET_KEY}",
@@ -92,7 +93,26 @@ def initiate_stk_push(request):
 
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=30, verify=True)
-        response_data = response.json()
+        
+        try:
+            response_data = response.json()
+        except ValueError:
+            # Response is not valid JSON - might be HTML error page or empty response
+            logger.error(f"Lipana API returned non-JSON response: Status {response.status_code}, Body: {response.text[:200]}")
+            if settings.LIPANA_ENABLE_MOCK:
+                logger.info("Returning mocked STK response due to invalid API response and LIPANA_ENABLE_MOCK=True")
+                return JsonResponse({
+                    "mock": True,
+                    "status": "queued",
+                    "message": "Mocked STK push (invalid API response)",
+                    "phone": phone,
+                    "amount": int(amount),
+                    "reference": reference,
+                }, status=200)
+            return JsonResponse({
+                "error": "Lipana API returned invalid response. Check API endpoint configuration.",
+                "details": f"Status {response.status_code}: {response.text[:100]}",
+            }, status=502)
         
         logger.info(f"Lipana API Response: {response.status_code} - {response_data}")
         
