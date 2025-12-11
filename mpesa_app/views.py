@@ -59,7 +59,7 @@ def initiate_stk_push(request):
     url = f"{api_base}{path}"
     
     headers = {
-        "Authorization": f"Bearer {settings.LIPANA_SECRET_KEY}",
+        "x-api-key": settings.LIPANA_SECRET_KEY,
         "Content-Type": "application/json",
     }
 
