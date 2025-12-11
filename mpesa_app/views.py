@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import MpesaTransaction  # This should work if models.py exists
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def home(request):
-    return HttpResponse("Welcome to the M-Pesa API Project Homepage")
+    return render(request, 'home.html')
 
 
 def health(request):

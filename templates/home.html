@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Pesa Payment System | Django API</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --success-color: #28a745;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            padding: 80px 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-section p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+        
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), #1557b0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin: 0 auto 20px;
+        }
+        
+        .feature-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-custom {
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), #1557b0);
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
+        }
+        
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success-color), #218838);
+            color: white;
+        }
+        
+        .btn-success-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .endpoint-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        
+        .method-get {
+            background: #61affe;
+            color: white;
+        }
+        
+        .method-post {
+            background: #49cc90;
+            color: white;
+        }
+        
+        .stats-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+        
+        code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1>💳 M-Pesa Payment System</h1>
+            <p>Seamless mobile money integration with Django & Lipana API</p>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="/admin/" class="btn btn-custom btn-primary-custom">
+                    <i class="bi bi-shield-lock me-2"></i>Admin Dashboard
+                </a>
+                <a href="#api" class="btn btn-custom btn-success-custom">
+                    <i class="bi bi-code-square me-2"></i>API Documentation
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card card-custom">
+                        <div class="card-body text-center p-4">
+                            <div class="card-icon">
+                                <i class="bi bi-phone"></i>
+                            </div>
+                            <h4>STK Push</h4>
+                            <p class="text-muted">Initiate instant payment requests directly to customer phones via M-Pesa STK.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card card-custom">
+                        <div class="card-body text-center p-4">
+                            <div class="card-icon">
+                                <i class="bi bi-webhook"></i>
+                            </div>
+                            <h4>Webhook Handler</h4>
+                            <p class="text-muted">Real-time payment status updates with secure webhook callbacks from Lipana.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card card-custom">
+                        <div class="card-body text-center p-4">
+                            <div class="card-icon">
+                                <i class="bi bi-database"></i>
+                            </div>
+                            <h4>Transaction Management</h4>
+                            <p class="text-muted">Track, filter, and manage all M-Pesa transactions with powerful admin tools.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Endpoints Section -->
+    <section class="py-5" id="api">
+        <div class="container">
+            <div class="card card-custom">
+                <div class="card-body p-5">
+                    <h2 class="mb-4"><i class="bi bi-code-slash me-2"></i>API Endpoints</h2>
+                    
+                    <div class="endpoint-card">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <span class="endpoint-method method-get">GET</span>
+                                <code>/health/</code>
+                            </div>
+                            <span class="text-muted">Health check endpoint</span>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-card">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <span class="endpoint-method method-post">POST</span>
+                                <code>/api/stk-push/</code>
+                            </div>
+                            <span class="text-muted">Initiate STK push payment</span>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">Request Body:</small>
+                            <pre class="bg-light p-2 rounded mt-2"><code>{
+  "phone": "254700686463",
+  "amount": 10,
+  "reference": "Order #123"
+}</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-card">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <span class="endpoint-method method-post">POST</span>
+                                <code>/webhooks/mpesa/</code>
+                            </div>
+                            <span class="text-muted">M-Pesa callback handler</span>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-card">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <span class="endpoint-method method-get">GET</span>
+                                <code>/admin/</code>
+                            </div>
+                            <span class="text-muted">Django admin interface</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="card card-custom">
+                <div class="card-body p-5">
+                    <h2 class="mb-4"><i class="bi bi-rocket-takeoff me-2"></i>Quick Start</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>1. Health Check</h5>
+                            <pre class="bg-dark text-light p-3 rounded"><code>curl https://my-django-project-1-0k73.onrender.com/health/</code></pre>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>2. Initiate Payment</h5>
+                            <pre class="bg-dark text-light p-3 rounded"><code>curl -X POST https://my-django-project-1-0k73.onrender.com/api/stk-push/ \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"254700686463","amount":10,"reference":"Test"}'</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>3. Access Admin Dashboard</h5>
+                        <p>Visit <a href="/admin/" class="text-decoration-none"><code>/admin/</code></a> to manage transactions, view payment history, and configure settings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        <div class="stats-number">100%</div>
+                        <p class="text-muted mb-0">Uptime</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-lightning text-warning" style="font-size: 2rem;"></i>
+                        <div class="stats-number">&lt;2s</div>
+                        <p class="text-muted mb-0">Response Time</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-shield-check text-primary" style="font-size: 2rem;"></i>
+                        <div class="stats-number">SSL</div>
+                        <p class="text-muted mb-0">Encrypted</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-code-slash text-info" style="font-size: 2rem;"></i>
+                        <div class="stats-number">REST</div>
+                        <p class="text-muted mb-0">API Standard</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-2">Built with Django 4.2 | Powered by Lipana API</p>
+            <p class="mb-0">
+                <a href="https://github.com/jamiljuma2/My-django-project" class="text-white text-decoration-none me-3">
+                    <i class="bi bi-github me-1"></i>GitHub
+                </a>
+                <a href="/admin/" class="text-white text-decoration-none">
+                    <i class="bi bi-gear me-1"></i>Admin
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
