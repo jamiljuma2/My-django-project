@@ -5,7 +5,7 @@ import time
 import sys
 
 # Test configuration
-BASE_URL = "http://localhost:8000"
+BASE_URL = "https://my-django-project-1-0k73.onrender.com"
 TEST_PHONE = "254700686463"  # Replace with test phone number
 TEST_AMOUNT = 10  # Test with small amount
 
