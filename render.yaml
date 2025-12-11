@@ -16,4 +16,12 @@ services:
         value: False
       - key: LIPANA_SKIP_DNS_CHECK
         value: False
+      - key: LIPANA_API_BASE
+        value: https://api.lipana.dev
+      - key: LIPANA_STK_PATH
+        value: /v1/transactions/push-stk
+      - key: LIPANA_SECRET_KEY
+        sync: false
+      - key: LIPANA_PUBLISHABLE_KEY
+        sync: false
     healthCheckPath: /health/
