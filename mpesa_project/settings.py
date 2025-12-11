@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def _get_setting(name, default=None, required=False):
     val = os.environ.get(name)

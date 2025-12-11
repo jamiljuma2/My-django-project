@@ -1,5 +1,1 @@
-
-from django.contrib import admin
-from .models import MpesaTransaction
-
-admin.site.register(MpesaTransaction)
+# This file is intentionally empty - admin configuration is handled in mpesa_app/admin.py
