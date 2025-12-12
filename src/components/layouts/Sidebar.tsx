@@ -1,0 +1,145 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard,
+  BookOpen,
+  CheckSquare,
+  Upload,
+  DollarSign,
+  Star,
+  Settings,
+  LogOut,
+  X,
+  FileText,
+  Wallet,
+  Bell,
+  BarChart3,
+  Users,
+} from 'lucide-react';
+import { useUIStore, useAuthStore } from '@/store';
+import { UserRole } from '@/types';
+
+interface SidebarLink {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+const writerLinks: SidebarLink[] = [
+  { label: 'Dashboard', href: '/dashboard/writer', icon: <LayoutDashboard size={20} /> },
+  { label: 'Subscription', href: '/dashboard/writer/subscription', icon: <BookOpen size={20} /> },
+  { label: 'Available Tasks', href: '/dashboard/writer/available-tasks', icon: <CheckSquare size={20} /> },
+  { label: 'My Tasks', href: '/dashboard/writer/my-tasks', icon: <Upload size={20} /> },
+  { label: 'Upload Work', href: '/dashboard/writer/upload', icon: <Upload size={20} /> },
+  { label: 'Earnings', href: '/dashboard/writer/earnings', icon: <DollarSign size={20} /> },
+  { label: 'Ratings & Badge', href: '/dashboard/writer/ratings', icon: <Star size={20} /> },
+  { label: 'Settings', href: '/dashboard/writer/settings', icon: <Settings size={20} /> },
+];
+
+const studentLinks: SidebarLink[] = [
+  { label: 'Dashboard', href: '/dashboard/student', icon: <LayoutDashboard size={20} /> },
+  { label: 'Post Assignment', href: '/dashboard/student/post-assignment', icon: <FileText size={20} /> },
+  { label: 'My Assignments', href: '/dashboard/student/my-assignments', icon: <BookOpen size={20} /> },
+  { label: 'Wallet', href: '/dashboard/student/wallet', icon: <Wallet size={20} /> },
+  { label: 'Notifications', href: '/dashboard/student/notifications', icon: <Bell size={20} /> },
+  { label: 'Settings', href: '/dashboard/student/settings', icon: <Settings size={20} /> },
+];
+
+const adminLinks: SidebarLink[] = [
+  { label: 'Overview', href: '/dashboard/admin', icon: <BarChart3 size={20} /> },
+  { label: 'Assignments', href: '/dashboard/admin/assignments', icon: <BookOpen size={20} /> },
+  { label: 'Submissions', href: '/dashboard/admin/submissions', icon: <FileText size={20} /> },
+  { label: 'Payments', href: '/dashboard/admin/payments', icon: <DollarSign size={20} /> },
+  { label: 'Users', href: '/dashboard/admin/users', icon: <Users size={20} /> },
+  { label: 'Ratings', href: '/dashboard/admin/ratings', icon: <Star size={20} /> },
+  { label: 'Settings', href: '/dashboard/admin/settings', icon: <Settings size={20} /> },
+];
+
+export const Sidebar: React.FC = () => {
+  const pathname = usePathname();
+  const { sidebarOpen, setSidebarOpen } = useUIStore();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const getLinksByRole = (role: UserRole): SidebarLink[] => {
+    switch (role) {
+      case 'writer':
+        return writerLinks;
+      case 'student':
+        return studentLinks;
+      case 'admin':
+        return adminLinks;
+      default:
+        return [];
+    }
+  };
+
+  const links = user ? getLinksByRole(user.role) : [];
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 overflow-y-auto transform transition-transform duration-300 z-40 lg:translate-x-0 lg:static lg:top-0 lg:h-screen ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-4 flex flex-col h-full">
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden mb-4 p-2 hover:bg-gray-100 rounded-lg self-end"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Navigation Links */}
+          <nav className="space-y-2 flex-1">
+            {links.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {link.icon}
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors border-t pt-4"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+};
