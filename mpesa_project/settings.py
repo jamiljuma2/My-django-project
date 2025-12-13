@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 ROOT_URLCONF = 'mpesa_project.urls'
@@ -149,6 +150,7 @@ CSRF_TRUSTED_ORIGINS = [
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [

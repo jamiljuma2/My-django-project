@@ -13,7 +13,14 @@ from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from .models import MpesaTransaction  # This should work if models.py exists
+from rest_framework import status, generics, views
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
+from .models import MpesaTransaction
+from .serializers import RegisterSerializer, LoginSerializer, TokenSerializer, UserSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -241,3 +248,64 @@ def mpesa_webhook(request):
 
     return JsonResponse({"status": "ok", "created": created})
 
+
+# --- DRF Auth Views (REST endpoints with token support) ---
+class RegisterView(generics.CreateAPIView):
+    """Register a new user and return auth token."""
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        self.token = token
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        user = User.objects.get(username=response.data['username'])
+        token = Token.objects.get(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+
+
+class LoginView(views.APIView):
+    """Authenticate user and return auth token."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data
+        })
+
+
+class LogoutView(views.APIView):
+    """Delete user's auth token (logout)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.user.auth_token.delete()
+        return Response({'status': 'logged out'})
+
+
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    """Get/update current authenticated user."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
