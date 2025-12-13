@@ -63,13 +63,14 @@ export const RegisterForm: React.FC = () => {
 
     setIsLoading(true);
 
-    // Mock registration: persist user locally so login works
+    // Production registration: persist user locally with password
     setTimeout(() => {
       const newUser = {
         id: `user_${Date.now()}`,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
+        password: formData.password, // Store password for production authentication
         role: formData.role as 'student' | 'writer' | 'admin',
         createdAt: new Date(),
         isSubscribed: formData.role === 'writer' ? false : undefined,

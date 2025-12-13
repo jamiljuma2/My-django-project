@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input, Button, Card } from '@/components/common';
 import { toast } from '@/components/common/Toast';
 import { useAuthStore } from '@/store';
-import { validateEmail, validatePassword } from '@/utils/helpers';
-import { mockWriters, mockStudents } from '@/utils/mockData';
+import { validateEmail } from '@/utils/helpers';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
@@ -43,38 +42,51 @@ export const LoginForm: React.FC = () => {
 
     setIsLoading(true);
 
-    // Mock authentication (replace with actual API call)
+    // Production authentication - only check registered users
     setTimeout(() => {
-      // Find user in mock data and any locally registered users
-      let locallyRegistered: any[] = [];
+      // Get registered users from localStorage only
+      let registeredUsers: any[] = [];
       try {
-        locallyRegistered = typeof window !== 'undefined'
+        registeredUsers = typeof window !== 'undefined'
           ? JSON.parse(localStorage.getItem('registeredUsers') || '[]')
           : [];
-      } catch (_) {}
-      const allUsers = [...mockWriters, ...mockStudents, ...locallyRegistered];
-      const user = allUsers.find((u) => u.email === formData.email);
-
-      if (user) {
-        const normalizedUser =
-          user.role === 'writer' && typeof (user as any).isSubscribed === 'undefined'
-            ? { ...user, isSubscribed: true }
-            : user;
-
-        login(normalizedUser as any);
-        toast.success('Login successful!');
-        // Redirect based on role
-        if (user.role === 'writer') {
-          router.push('/dashboard/writer');
-        } else if (user.role === 'student') {
-          router.push('/dashboard/student');
-        } else {
-          router.push('/dashboard/admin');
-        }
-      } else {
-        toast.error('Invalid email or password');
+      } catch (_) {
+        registeredUsers = [];
       }
-      setIsLoading(false);
+
+      // Find user by email
+      const user = registeredUsers.find((u) => u.email === formData.email);
+
+      if (!user) {
+        toast.error('No account found with this email. Please register first.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate password
+      if (user.password !== formData.password) {
+        toast.error('Invalid password. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Successful authentication
+      const normalizedUser =
+        user.role === 'writer' && typeof user.isSubscribed === 'undefined'
+          ? { ...user, isSubscribed: true }
+          : user;
+
+      login(normalizedUser as any);
+      toast.success('Login successful!');
+      
+      // Redirect based on role
+      if (user.role === 'writer') {
+        router.push('/dashboard/writer');
+      } else if (user.role === 'student') {
+        router.push('/dashboard/student');
+      } else {
+        router.push('/dashboard/admin');
+      }
     }, 1000);
   };
 
@@ -98,7 +110,7 @@ export const LoginForm: React.FC = () => {
           name="password"
           value={formData.password}
           onChange={handleChange}
-          error={errors.password}
+          error={errors.error}
           placeholder="Enter your password"
           required
         />
@@ -112,16 +124,11 @@ export const LoginForm: React.FC = () => {
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-gray-600">
-        Don't have an account?{' '}
+        Don''t have an account?{' '}
         <Link href="/register" className="text-blue-600 font-medium hover:underline">
           Register here
         </Link>
       </p>
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-        <p className="text-xs text-gray-600 font-medium mb-1">Demo Accounts:</p>
-        <p className="text-xs text-gray-600">Writer: alice@example.com</p>
-        <p className="text-xs text-gray-600">Student: student1@example.com</p>
-      </div>
     </Card>
   );
 };
