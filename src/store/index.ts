@@ -84,13 +84,37 @@ interface UIStore {
   setSidebarOpen: (open: boolean) => void;
 }
 
+// Get initial sidebar state from localStorage or default to true
+const getInitialSidebarState = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  try {
+    const stored = localStorage.getItem('sidebarOpen');
+    return stored !== null ? JSON.parse(stored) : true;
+  } catch {
+    return true;
+  }
+};
+
 export const useUIStore = create<UIStore>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: getInitialSidebarState(),
   toggleSidebar: () =>
-    set((state) => ({
-      sidebarOpen: !state.sidebarOpen,
-    })),
-  setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
+    set((state) => {
+      const newState = !state.sidebarOpen;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+        } catch {}
+      }
+      return { sidebarOpen: newState };
+    }),
+  setSidebarOpen: (open: boolean) => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('sidebarOpen', JSON.stringify(open));
+      } catch {}
+    }
+    return set({ sidebarOpen: open });
+  },
 }));
 
 interface ModalStore {
