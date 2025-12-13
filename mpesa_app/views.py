@@ -15,9 +15,9 @@ from django.contrib.auth.models import User
 
 from rest_framework import status, generics, views
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import MpesaTransaction
 from .serializers import RegisterSerializer, LoginSerializer, TokenSerializer, UserSerializer
@@ -257,15 +257,15 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-        self.token = token
+        self.user = user
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         user = User.objects.get(username=response.data['username'])
-        token = Token.objects.get(user=user)
+        refresh = RefreshToken.for_user(user)
         return Response({
-            'token': token.key,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
@@ -285,10 +285,10 @@ class LoginView(views.APIView):
         user = authenticate(request, username=username, password=password)
         if not user:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        token, _ = Token.objects.get_or_create(user=user)
+        refresh = RefreshToken.for_user(user)
         return Response({
-            'token': token.key,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': UserSerializer(user).data
         })
 
@@ -298,7 +298,15 @@ class LogoutView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.auth_token.delete()
+        # If a refresh token is provided, try to blacklist it (requires token_blacklist app)
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                # ignore errors - client should delete tokens on their side
+                pass
         return Response({'status': 'logged out'})
 
 

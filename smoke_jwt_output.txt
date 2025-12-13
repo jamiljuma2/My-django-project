@@ -1,0 +1,12 @@
+
+== REGISTER status= 400
+Content-Type: application/json
+{"username":["A user with that username already exists."]}
+
+== TOKEN status= 200
+Content-Type: application/json
+{"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NTc0MjE1NSwiaWF0IjoxNzY1NjU1NzU1LCJqdGkiOiJiMmVhODVkZmRkZjc0ZDcxYmJkYTM5NzUwYTM2M2E3ZCIsInVzZXJfaWQiOiIzIn0.vTmlt_TlEX9Uf2ZcjbOLXxjdGiBaJ-0eavKqMFCAhWc","access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NjU5MzU1LCJpYXQiOjE3NjU2NTU3NTUsImp0aSI6IjE4Mzg4MTE3YzQ5NjQwNWM5ZGM5ODA2OTljMjZlYzhhIiwidXNlcl9pZCI6IjMifQ.CjB7-qDEnDWjJKrvEevyj7FH47ifbEBsesGK7LJeZYg"}
+
+== USER status= 200
+Content-Type: application/json
+{"id":3,"username":"smokeuser","email":"smoke@example.com","first_name":"","last_name":""}

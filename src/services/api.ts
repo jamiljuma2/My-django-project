@@ -8,7 +8,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -19,14 +19,73 @@ class ApiClient {
       xsrfHeaderName: 'X-CSRFToken',
     });
 
-    // Add interceptor to include auth token
+    // Add interceptor to include auth token (supports legacy `auth_token` and new `access` key)
     this.client.interceptors.request.use((config) => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const access = typeof window !== 'undefined' ? localStorage.getItem('access') : null;
+      const legacy = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const token = access || legacy;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });
+
+    // Global error interceptor to surface correlation ID
+    this.client.interceptors.response.use(
+      (response) => {
+        try {
+          const cid = response?.headers?.["x-correlation-id"] || null;
+          const detail = response?.data || null;
+          const evt = new CustomEvent("api-success", {
+            detail: {
+              message: detail?.message || "Success",
+              status: response?.status,
+              cid,
+              bodyCid: detail?.data?.cid || null,
+              url: response?.config?.url || null,
+              method: response?.config?.method || null,
+            },
+          });
+          if (typeof window !== "undefined") window.dispatchEvent(evt);
+        } catch {}
+        return response;
+      },
+      (error) => {
+        try {
+          const cid = error?.response?.headers?.["x-correlation-id"] || null;
+          const detail = error?.response?.data || null;
+          const message = detail?.message || error?.message || "Request failed";
+          const evt = new CustomEvent("api-error", {
+            detail: {
+              message,
+              status: error?.response?.status,
+              cid,
+              bodyCid: detail?.data?.cid || null,
+              error: detail?.error || null,
+              url: error?.config?.url || null,
+              method: error?.config?.method || null,
+            },
+          });
+          if (typeof window !== "undefined") window.dispatchEvent(evt);
+        } catch {}
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  // Normalized response/error handling helpers
+  handleResponse<T>(res: { data: T }) {
+    return res.data;
+  }
+
+  handleError(err: any) {
+    const message = err?.response?.data?.message || err?.message || 'Request failed';
+    return Promise.reject({
+      status: 'error',
+      message,
+      error: err?.response?.data?.error || null,
+    });
+  }
   }
 
   // ============ AUTH ENDPOINTS ============

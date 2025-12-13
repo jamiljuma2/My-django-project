@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/common';
 import { Navbar } from '@/components/layouts';
 import { BookOpen, CheckCircle, DollarSign, Shield, Users, Zap } from 'lucide-react';
+import StatusPing from '@/components/common/StatusPing';
 
 export default function HomePage() {
   return (
@@ -37,6 +38,9 @@ export default function HomePage() {
             <Link href="/login">
               <Button variant="success" size="lg">Login</Button>
             </Link>
+          </div>
+          <div className="mt-10 max-w-3xl mx-auto">
+            <StatusPing />
           </div>
         </div>
       </section>

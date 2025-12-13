@@ -14,6 +14,10 @@ from mpesa_app.views import (
     LogoutView,
     UserDetailView,
 )
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('', home, name='home'),
@@ -30,6 +34,9 @@ urlpatterns = [
     path('api/drf-auth/login/', LoginView.as_view(), name='drf-login'),
     path('api/drf-auth/logout/', LogoutView.as_view(), name='drf-logout'),
     path('api/drf-auth/user/', UserDetailView.as_view(), name='drf-user'),
+    # Standard SimpleJWT endpoints
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('webhooks/mpesa/', mpesa_webhook, name='mpesa-webhook'),
     path('webhooks/mpesa', mpesa_webhook),  # backward compatibility
 ]

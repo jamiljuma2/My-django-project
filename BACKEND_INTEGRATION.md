@@ -40,7 +40,8 @@ Login/Register endpoints should return:
       "lastName": "Doe",
       "role": "student"
     },
-    "token": "jwt_token_here"
+    "access": "<jwt_access_token>",
+    "refresh": "<jwt_refresh_token>"
   }
 }
 ```

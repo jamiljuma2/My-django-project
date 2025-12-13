@@ -53,9 +53,17 @@ export const LoginForm: React.FC = () => {
         return;
       }
 
-      // Store auth token if provided
-      if (response.data?.token && typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', response.data.token);
+      // Store tokens if provided (JWT `access`/`refresh`), fall back to legacy `token`
+      if (typeof window !== 'undefined') {
+        if (response.data?.access) {
+          localStorage.setItem('access', response.data.access);
+        }
+        if (response.data?.refresh) {
+          localStorage.setItem('refresh', response.data.refresh);
+        }
+        if (response.data?.token) {
+          localStorage.setItem('auth_token', response.data.token);
+        }
       }
 
       // Update auth store with user data

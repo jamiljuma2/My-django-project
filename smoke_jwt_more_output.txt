@@ -1,0 +1,28 @@
+
+== REGISTER status= 201
+Content-Type: application/json
+{"access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NjYwNjczLCJpYXQiOjE3NjU2NTcwNzMsImp0aSI6ImYwOTZkNWM4Nzg0YzQzNmJhZmI2OTQwZTIyYTBhOGI5IiwidXNlcl9pZCI6IjYifQ.T4qWc88EonVj7C9HHxHhiKkTeQWeOBsGvGxPIvdxDM0","refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NTc0MzQ3MywiaWF0IjoxNzY1NjU3MDczLCJqdGkiOiJiZWJkOGZkNzMxZmE0Y2E2OTYxZjZlZTVjN2RlYWFiMCIsInVzZXJfaWQiOiI2In0.y-fRYkbdznZ2U0b3elkNIIbthRvwqckQ_xj5NPR2xpA","user":{"id":6,"username":"smokeuser_1765657072","email":"smokeuser_1765657072@example.com","first_name":"","last_name":""}}
+
+== TOKEN_OBTAIN status= 200
+Content-Type: application/json
+{"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NTc0MzQ3NCwiaWF0IjoxNzY1NjU3MDc0LCJqdGkiOiI1NDkyOTUzZTA5ODI0MjA2OGIwMTMzZGFjMDhlYzA4NSIsInVzZXJfaWQiOiI2In0.ZhIuxN1csWHMEzjFeOcd18iknBxz7SuCVHF-HGh-qwg","access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NjYwNjc0LCJpYXQiOjE3NjU2NTcwNzQsImp0aSI6IjkxNDFkZDFhZjhkMjQyMTI5OGRkNzZlN2M1OWM3MWIxIiwidXNlcl9pZCI6IjYifQ.gMt3W067Y3YmjVbQFsDnM4NetJgJj0bXAwB6Fzijvxo"}
+
+== USER_WITH_ACCESS status= 200
+Content-Type: application/json
+{"id":6,"username":"smokeuser_1765657072","email":"smokeuser_1765657072@example.com","first_name":"","last_name":""}
+
+== TOKEN_REFRESH status= 200
+Content-Type: application/json
+{"access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NjYwNjc0LCJpYXQiOjE3NjU2NTcwNzQsImp0aSI6IjgxNzQ1NWM3YTg1OTRkYjZiN2NhMjI1ZTMzZmE2MzI0IiwidXNlcl9pZCI6IjYifQ.6G2nBmLGGGuwVwPTf31BrvudpMxinV6e0cQR-koT08U"}
+
+== LOGOUT status= 200
+Content-Type: application/json
+{"status":"logged out"}
+
+== TOKEN_REFRESH_AFTER_LOGOUT status= 401
+Content-Type: application/json
+{"detail":"Token is blacklisted","code":"token_not_valid"}
+
+== USER_WITH_NEW_ACCESS status= 200
+Content-Type: application/json
+{"id":6,"username":"smokeuser_1765657072","email":"smokeuser_1765657072@example.com","first_name":"","last_name":""}
