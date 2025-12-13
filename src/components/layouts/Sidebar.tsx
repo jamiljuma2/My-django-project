@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -20,6 +21,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useUIStore, useAuthStore } from '@/store';
+import { toast } from '@/components/common/Toast';
 import { UserRole } from '@/types';
 
 interface SidebarLink {
@@ -60,6 +62,8 @@ const adminLinks: SidebarLink[] = [
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const { sidebarOpen, setSidebarOpen } = useUIStore();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
@@ -80,7 +84,14 @@ export const Sidebar: React.FC = () => {
   const links = user ? getLinksByRole(user.role) : [];
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
+    toast.success('Logged out successfully');
+    setShowLogoutConfirm(false);
+    router.push('/login');
   };
 
   return (
@@ -131,13 +142,39 @@ export const Sidebar: React.FC = () => {
           </nav>
 
           {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors border-t pt-4"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
+          <div className="space-y-2 border-t pt-4">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium"
+            >
+              <LogOut size={20} />
+              <span>Logout</span>
+            </button>
+
+            {/* Logout Confirmation Modal */}
+            {showLogoutConfirm && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
+                  <p className="text-gray-600 mb-6">Are you sure you want to logout? You will need to login again to access your account.</p>
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      onClick={() => setShowLogoutConfirm(false)}
+                      className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmLogout}
+                      className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
     </>
