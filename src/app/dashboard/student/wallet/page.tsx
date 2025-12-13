@@ -74,8 +74,8 @@ export default function WalletPage() {
         </Card>
 
         <Card>
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Top Up</h2>
-          <div className="grid grid-cols-4 gap-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Top Up</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {[500, 1000, 2000, 5000].map((amt) => (
               <button
                 key={amt}
@@ -83,9 +83,10 @@ export default function WalletPage() {
                   setAmount(amt.toString());
                   openModal('wallet-topup');
                 }}
-                className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-center"
+                className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-center shadow-sm bg-white"
               >
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(amt)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(amt)}</p>
+                <p className="text-xs text-gray-500 mt-1">Tap to top up</p>
               </button>
             ))}
           </div>
