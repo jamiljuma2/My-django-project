@@ -110,7 +110,7 @@ export const LoginForm: React.FC = () => {
           name="password"
           value={formData.password}
           onChange={handleChange}
-          error={errors.error}
+          error={errors.password}
           placeholder="Enter your password"
           required
         />
@@ -132,3 +132,4 @@ export const LoginForm: React.FC = () => {
     </Card>
   );
 };
+
