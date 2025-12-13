@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/common';
 import { Navbar } from '@/components/layouts';
 import { BookOpen, CheckCircle, DollarSign, Shield, Users, Zap } from 'lucide-react';
@@ -13,6 +14,16 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <Image
+              src="/ChatGPT%20Image%20Dec%2012%2C%202025%2C%2011_18_03%20PM.png"
+              alt="EduLink Writers"
+              width={72}
+              height={72}
+              className="rounded-xl shadow-md bg-white"
+            />
+            <span className="text-2xl font-semibold text-blue-700">EduLink Writers</span>
+          </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Connect with Expert Writers for Your Assignments
           </h1>

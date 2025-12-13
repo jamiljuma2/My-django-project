@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, Bell, LogOut } from 'lucide-react';
 import { useUIStore, useNotificationStore, useAuthStore } from '@/store';
 import { Button } from '@/components/common';
@@ -30,8 +31,16 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
                 <Menu size={24} />
               </button>
             )}
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              EduLink Writers
+            <Link href="/" className="flex items-center gap-3 text-2xl font-bold text-blue-600">
+              <Image
+                src="/ChatGPT%20Image%20Dec%2012%2C%202025%2C%2011_18_03%20PM.png"
+                alt="EduLink Writers"
+                width={40}
+                height={40}
+                className="rounded-lg shadow-sm bg-white"
+                priority
+              />
+              <span>EduLink Writers</span>
             </Link>
           </div>
 
