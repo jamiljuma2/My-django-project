@@ -48,31 +48,31 @@ export default function EarningsPage() {
         </div>
 
         {/* Payment History */}
-        <Card>
+        <Card className="bg-white">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Payment History</h2>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4">Date</th>
-                  <th className="text-left py-3 px-4">Type</th>
-                  <th className="text-left py-3 px-4">Amount</th>
-                  <th className="text-left py-3 px-4">Status</th>
-                  <th className="text-left py-3 px-4">Reference</th>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left py-3 px-4 text-gray-800">Date</th>
+                  <th className="text-left py-3 px-4 text-gray-800">Type</th>
+                  <th className="text-left py-3 px-4 text-gray-800">Amount</th>
+                  <th className="text-left py-3 px-4 text-gray-800">Status</th>
+                  <th className="text-left py-3 px-4 text-gray-800">Reference</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {writerPayments.map((payment) => (
-                  <tr key={payment.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4">{formatDate(payment.createdAt)}</td>
-                    <td className="py-3 px-4 capitalize">{payment.type}</td>
-                    <td className="py-3 px-4 font-semibold">{formatCurrency(payment.amount)}</td>
+                  <tr key={payment.id} className="hover:bg-gray-50">
+                    <td className="py-3 px-4 text-gray-900">{formatDate(payment.createdAt)}</td>
+                    <td className="py-3 px-4 capitalize text-gray-900">{payment.type}</td>
+                    <td className="py-3 px-4 font-semibold text-gray-900">{formatCurrency(payment.amount)}</td>
                     <td className="py-3 px-4">
-                      <Badge variant={payment.status === 'completed' ? 'success' : 'warning'}>
+                      <Badge variant={payment.status === 'completed' ? 'success' : payment.status === 'failed' ? 'danger' : 'warning'}>
                         {payment.status}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{payment.reference}</td>
+                    <td className="py-3 px-4 text-gray-800">{payment.reference}</td>
                   </tr>
                 ))}
               </tbody>
