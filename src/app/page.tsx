@@ -35,7 +35,7 @@ export default function HomePage() {
               <Button size="lg">Get Started</Button>
             </Link>
             <Link href="/login">
-              <Button variant="secondary" size="lg">Login</Button>
+              <Button variant="success" size="lg">Login</Button>
             </Link>
           </div>
         </div>
