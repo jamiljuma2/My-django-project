@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { ApiResponse, STKPushRequest, STKPushResponse } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 class ApiClient {
   private client: AxiosInstance;
@@ -273,3 +273,4 @@ interface UploadedFile {
 }
 
 export const apiClient = new ApiClient();
+
