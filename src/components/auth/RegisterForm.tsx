@@ -88,6 +88,11 @@ export const RegisterForm: React.FC = () => {
         router.push('/login');
       }
     } catch (error: any) {
+      console.error('Registration Error - Full Details:', error);
+      console.error('Error Response:', error.response);
+      console.error('Error Message:', error.message);
+      console.error('Error Config:', error.config);
+      
       const errorMessage = error.response?.data?.error || error.message || 'Registration failed. Please try again.';
       toast.error(errorMessage);
       setIsLoading(false);

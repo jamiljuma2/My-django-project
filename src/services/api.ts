@@ -10,10 +10,13 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
-      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
+      // Required for Django session + CSRF cookies over CORS
+      withCredentials: true,
+      xsrfCookieName: 'csrftoken',
+      xsrfHeaderName: 'X-CSRFToken',
     });
 
     // Add interceptor to include auth token
