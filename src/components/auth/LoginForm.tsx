@@ -7,6 +7,7 @@ import { Input, Button, Card } from '@/components/common';
 import { toast } from '@/components/common/Toast';
 import { useAuthStore } from '@/store';
 import { validateEmail } from '@/utils/helpers';
+import { apiClient } from '@/services/api';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
@@ -42,52 +43,34 @@ export const LoginForm: React.FC = () => {
 
     setIsLoading(true);
 
-    // Production authentication - only check registered users
-    setTimeout(() => {
-      // Get registered users from localStorage only
-      let registeredUsers: any[] = [];
-      try {
-        registeredUsers = typeof window !== 'undefined'
-          ? JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-          : [];
-      } catch (_) {
-        registeredUsers = [];
-      }
+    try {
+      // Call backend API
+      const response = await apiClient.login(formData.email, formData.password);
 
-      // Find user by email
-      const user = registeredUsers.find((u) => u.email === formData.email);
-
-      if (!user) {
-        toast.error('No account found with this email. Please register first.');
+      if (!response.success) {
+        toast.error(response.error || 'Login failed. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      // Validate password
-      if (user.password !== formData.password) {
-        toast.error('Invalid password. Please try again.');
-        setIsLoading(false);
-        return;
+      // Store auth token if provided
+      if (response.data?.token && typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', response.data.token);
       }
 
-      // Successful authentication
-      const normalizedUser =
-        user.role === 'writer' && typeof user.isSubscribed === 'undefined'
-          ? { ...user, isSubscribed: true }
-          : user;
-
-      login(normalizedUser as any);
+      // Update auth store with user data
+      const user = response.data?.user || response.data;
+      login(user);
       toast.success('Login successful!');
-      
+
       // Redirect based on role
-      if (user.role === 'writer') {
-        router.push('/dashboard/writer');
-      } else if (user.role === 'student') {
-        router.push('/dashboard/student');
-      } else {
-        router.push('/dashboard/admin');
-      }
-    }, 1000);
+      const role = user.role || 'student';
+      router.push(`/dashboard/${role}`);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -132,4 +115,3 @@ export const LoginForm: React.FC = () => {
     </Card>
   );
 };
-

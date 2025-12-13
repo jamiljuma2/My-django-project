@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input, Button, Card, Select } from '@/components/common';
 import { toast } from '@/components/common/Toast';
 import { validateEmail, validatePassword } from '@/utils/helpers';
+import { apiClient } from '@/services/api';
 
 export const RegisterForm: React.FC = () => {
   const router = useRouter();
@@ -63,39 +64,34 @@ export const RegisterForm: React.FC = () => {
 
     setIsLoading(true);
 
-    // Production registration: persist user locally with password
-    setTimeout(() => {
-      const newUser = {
-        id: `user_${Date.now()}`,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password, // Store password for production authentication
-        role: formData.role as 'student' | 'writer' | 'admin',
-        createdAt: new Date(),
-        isSubscribed: formData.role === 'writer' ? false : undefined,
-        subscription: formData.role === 'writer' ? 'free' : undefined,
-      };
+    try {
+      // Call backend API
+      const response = await apiClient.register(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName,
+        formData.role
+      );
 
-      try {
-        const existing = typeof window !== 'undefined'
-          ? JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-          : [];
-        const updated = [newUser, ...existing.filter((u: any) => u.email !== newUser.email)];
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('registeredUsers', JSON.stringify(updated));
-        }
-      } catch (_) {}
+      if (!response.success) {
+        toast.error(response.error || 'Registration failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success('Registration successful! You can now log in.');
 
       if (formData.role === 'writer') {
-        toast.success('Registration successful! Please complete your subscription to access tasks.');
         router.push('/dashboard/writer/subscription');
       } else {
-        toast.success('Registration successful! You can now log in.');
         router.push('/login');
       }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || 'Registration failed. Please try again.';
+      toast.error(errorMessage);
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
