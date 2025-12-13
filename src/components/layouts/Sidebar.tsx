@@ -68,6 +68,18 @@ export const Sidebar: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
+  // Lock body scroll when sidebar is open on mobile
+  React.useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [sidebarOpen]);
+
   const getLinksByRole = (role: UserRole): SidebarLink[] => {
     switch (role) {
       case 'writer':
@@ -94,27 +106,38 @@ export const Sidebar: React.FC = () => {
     router.push('/login');
   };
 
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay - only on mobile */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
+          aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Container - Responsive */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 overflow-y-auto transform transition-transform duration-300 z-40 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`
+          fixed left-0 top-16 h-[calc(100vh-4rem)] w-[80%] max-w-xs
+          lg:w-64 lg:relative lg:top-0 lg:h-screen
+          bg-white border-r border-gray-200 overflow-y-auto
+          transform transition-transform duration-300 ease-in-out
+          z-40
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
       >
         <div className="p-4 flex flex-col h-full">
           {/* Close button for mobile */}
           <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden mb-4 p-2 hover:bg-gray-100 rounded-lg self-end"
+            onClick={closeSidebar}
+            className="lg:hidden mb-4 p-2 hover:bg-gray-100 rounded-lg self-end transition-colors"
+            aria-label="Close sidebar"
           >
             <X size={24} />
           </button>
@@ -127,7 +150,7 @@ export const Sidebar: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={closeSidebar}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-blue-100 text-blue-700 font-medium'
@@ -154,9 +177,11 @@ export const Sidebar: React.FC = () => {
             {/* Logout Confirmation Modal */}
             {showLogoutConfirm && (
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
-                  <p className="text-gray-600 mb-6">Are you sure you want to logout? You will need to login again to access your account.</p>
+                  <p className="text-gray-600 mb-6">
+                    Are you sure you want to logout? You will need to login again to access your account.
+                  </p>
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => setShowLogoutConfirm(false)}
