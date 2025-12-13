@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, Bell, LogOut } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { useUIStore, useNotificationStore, useAuthStore } from '@/store';
 import { Button } from '@/components/common';
 
@@ -12,11 +12,6 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
   const notifications = useNotificationStore((s) => s.notifications);
   const unreadCount = notifications.filter((n) => !n.read).length;
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-
-  const handleLogout = () => {
-    logout();
-  };
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-40">
@@ -59,7 +54,7 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
                   )}
                 </Link>
                 {user && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <img
                       src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
                       alt={user.firstName}
@@ -68,9 +63,6 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
                     <span className="text-sm font-medium text-gray-700">{user.firstName}</span>
                   </div>
                 )}
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut size={18} />
-                </Button>
               </>
             )}
             {!isDashboard && (
