@@ -9,6 +9,9 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 
 from .models import MpesaTransaction  # This should work if models.py exists
 
@@ -21,6 +24,71 @@ def home(request):
 
 def health(request):
     return JsonResponse({"status": "ok", "service": "mpesa", "debug": settings.DEBUG})
+
+
+# --- Auth helpers for frontend ---
+@csrf_exempt
+def auth_csrf(request):
+    """Return a CSRF token so the frontend can include it in subsequent requests."""
+    token = get_token(request)
+    return JsonResponse({"csrfToken": token})
+
+
+@csrf_exempt
+def auth_register(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+    email = (data.get("email") or "").strip()
+
+    if not username or not password:
+        return JsonResponse({"error": "username and password are required"}, status=400)
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"error": "username already exists"}, status=409)
+
+    user = User.objects.create_user(username=username, email=email, password=password)
+    return JsonResponse({"id": user.id, "username": user.username, "email": user.email}, status=201)
+
+
+@csrf_exempt
+def auth_login(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not username or not password:
+        return JsonResponse({"error": "username and password are required"}, status=400)
+
+    user = authenticate(request, username=username, password=password)
+    if not user:
+        return JsonResponse({"error": "invalid credentials"}, status=401)
+
+    login(request, user)
+    return JsonResponse({"id": user.id, "username": user.username, "email": user.email})
+
+
+@csrf_exempt
+def auth_logout(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    logout(request)
+    return JsonResponse({"status": "logged out"})
 
 
 @csrf_exempt
