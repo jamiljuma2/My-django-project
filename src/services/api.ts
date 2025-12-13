@@ -10,6 +10,7 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -217,7 +218,7 @@ class ApiClient {
   }
 
   // ============ Helper Methods ============
-  private async get<T>(url: string, config?: any) {
+  private async get<T>(url: string, config?: any): Promise<ApiResponse<T>> {
     try {
       const response = await this.client.get<ApiResponse<T>>(url, config);
       return response.data;
@@ -226,7 +227,7 @@ class ApiClient {
     }
   }
 
-  private async post<T>(url: string, data?: any, config?: any) {
+  private async post<T>(url: string, data?: any, config?: any): Promise<ApiResponse<T>> {
     try {
       const response = await this.client.post<ApiResponse<T>>(url, data, config);
       return response.data;
@@ -235,7 +236,7 @@ class ApiClient {
     }
   }
 
-  private async put<T>(url: string, data?: any, config?: any) {
+  private async put<T>(url: string, data?: any, config?: any): Promise<ApiResponse<T>> {
     try {
       const response = await this.client.put<ApiResponse<T>>(url, data, config);
       return response.data;
@@ -244,7 +245,7 @@ class ApiClient {
     }
   }
 
-  private async delete<T>(url: string, config?: any) {
+  private async delete<T>(url: string, config?: any): Promise<ApiResponse<T>> {
     try {
       const response = await this.client.delete<ApiResponse<T>>(url, config);
       return response.data;
@@ -255,9 +256,10 @@ class ApiClient {
 
   private handleError(error: any): ApiResponse<any> {
     const axiosError = error as AxiosError<any>;
+    console.error('API Error:', axiosError);
     return {
       success: false,
-      error: axiosError.response?.data?.error || 'An error occurred',
+      error: axiosError.response?.data?.error || axiosError.response?.data?.message || axiosError.message || 'An error occurred',
       message: axiosError.message,
     };
   }
@@ -273,4 +275,6 @@ interface UploadedFile {
 }
 
 export const apiClient = new ApiClient();
+
+
 

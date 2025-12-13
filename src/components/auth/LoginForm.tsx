@@ -47,8 +47,8 @@ export const LoginForm: React.FC = () => {
       // Call backend API
       const response = await apiClient.login(formData.email, formData.password);
 
-      if (!response.success) {
-        toast.error(response.error || 'Login failed. Please try again.');
+      if (!response || !response.success) {
+        toast.error(response?.error || 'Login failed. Please try again.');
         setIsLoading(false);
         return;
       }

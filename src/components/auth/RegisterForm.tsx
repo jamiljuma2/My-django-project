@@ -74,8 +74,8 @@ export const RegisterForm: React.FC = () => {
         formData.role
       );
 
-      if (!response.success) {
-        toast.error(response.error || 'Registration failed. Please try again.');
+      if (!response || !response.success) {
+        toast.error(response?.error || 'Registration failed. Please try again.');
         setIsLoading(false);
         return;
       }
