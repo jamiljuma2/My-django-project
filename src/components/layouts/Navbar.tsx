@@ -26,7 +26,7 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
             {isDashboard && (
               <button
                 onClick={toggleSidebar}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Menu size={24} />
               </button>

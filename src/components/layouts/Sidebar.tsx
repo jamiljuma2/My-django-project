@@ -95,7 +95,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 overflow-y-auto transform transition-transform duration-300 z-40 lg:translate-x-0 lg:static lg:top-0 lg:h-screen ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 overflow-y-auto transform transition-transform duration-300 z-40 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
