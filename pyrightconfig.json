@@ -1,0 +1,7 @@
+{
+  "venvPath": "mpesa_app",
+  "venv": "venv",
+  "reportMissingModuleSource": "none",
+  "pythonVersion": "3.11"
+}
+
