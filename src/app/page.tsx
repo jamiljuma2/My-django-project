@@ -24,13 +24,13 @@ export default function HomePage() {
             />
             <span className="text-2xl font-semibold text-blue-700">EduLink Writers</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Connect with Expert Writers for Your Assignments
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             EduLink Writers is the premier marketplace connecting students with professional writers. Get quality work delivered on time, every time.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/register">
               <Button size="lg">Get Started</Button>
             </Link>

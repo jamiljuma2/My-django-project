@@ -30,7 +30,7 @@ export const AvailableTasksList: React.FC = () => {
     <div className="space-y-4">
       {availableTasks.map((task) => (
         <Card key={task.id} hoverable>
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900 mb-2">{task.title}</h3>
               <p className="text-gray-600 line-clamp-2">{task.description}</p>
@@ -38,7 +38,7 @@ export const AvailableTasksList: React.FC = () => {
             <Badge variant="primary">Available</Badge>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div className="flex items-center gap-2 text-gray-700">
               <DollarSign size={18} />
               <span className="font-semibold">{formatCurrency(task.budget)}</span>

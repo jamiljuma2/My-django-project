@@ -12,7 +12,7 @@ export default function AvailableTasksPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Available Tasks</h1>
             <p className="text-gray-600 mt-2">Browse and claim tasks that match your expertise</p>
