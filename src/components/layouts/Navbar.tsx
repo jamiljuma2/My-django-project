@@ -23,14 +23,12 @@ export const Navbar: React.FC<{ isDashboard?: boolean }> = ({ isDashboard = fals
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-4">
-            {isDashboard && (
-              <button
-                onClick={toggleSidebar}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Menu size={24} />
-              </button>
-            )}
+            <button
+              onClick={toggleSidebar}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Menu size={24} />
+            </button>
             <Link href="/" className="flex items-center gap-3 text-2xl font-bold text-blue-600">
               <Image
                 src="/ChatGPT%20Image%20Dec%2012%2C%202025%2C%2011_18_03%20PM.png"
