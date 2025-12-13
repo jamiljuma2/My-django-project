@@ -95,7 +95,7 @@ export default function WalletPage() {
 
       <Modal id="wallet-topup" title="Top Up Wallet" size="md">
         <ModalBody>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Amount (KES)"
               type="number"
