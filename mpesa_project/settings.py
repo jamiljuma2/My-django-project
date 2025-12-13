@@ -25,6 +25,9 @@ SECRET_KEY = _get_setting('DJANGO_SECRET_KEY', default='dev-secret-key-change-in
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ["my-django-project-1-0k73.onrender.com"]
+if DEBUG:
+    # Allow local testing hosts in development
+    ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [
     'mpesa_app',
