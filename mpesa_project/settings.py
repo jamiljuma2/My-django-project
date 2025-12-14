@@ -22,6 +22,7 @@ if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'my-django-project-1-0k73.onrender.com']
 
 INSTALLED_APPS = [
+    'corsheaders',
     'mpesa_app',
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
@@ -36,6 +37,7 @@ ROOT_URLCONF = 'mpesa_project.urls'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static files on production
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,6 +109,23 @@ else:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+
+# CORS configuration
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://my-django-project-1-0k73.onrender.com',
+    'https://edulink-writers.vercel.app',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://my-django-project-1-0k73.onrender.com',
+    'https://edulink-writers.vercel.app',
+]
 
 LOGGING = {
     'version': 1,
