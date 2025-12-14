@@ -1,12 +1,16 @@
 import hashlib
 import hmac
 import json
-import requests
 import logging
 import socket
+import time
 from urllib.parse import urlparse
 
+import requests
 from django.conf import settings
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.core import signing
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -16,41 +20,187 @@ from .models import MpesaTransaction  # This should work if models.py exists
 logger = logging.getLogger(__name__)
 
 
+def ok(message: str = "success", data: dict | None = None, status_code: int = 200):
+    payload = {
+        "status": "success",
+        "message": message,
+        "data": data or {},
+        "error": None,
+    }
+    return JsonResponse(payload, status=status_code)
+
+
+def fail(message: str, error: str | None = None, data: dict | None = None, status_code: int = 400):
+    payload = {
+        "status": "error",
+        "message": message,
+        "data": data or {},
+        "error": error,
+    }
+    return JsonResponse(payload, status=status_code)
+
+
 def home(request):
     return render(request, 'home.html')
 
 
 def health(request):
-    return JsonResponse({"status": "ok", "service": "mpesa", "debug": settings.DEBUG})
+    return ok("service healthy", {"service": "mpesa", "debug": settings.DEBUG})
+
+
+# --- Lightweight token auth helpers (stateless Bearer tokens) ---
+TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 7  # 7 days
+TOKEN_SALT = "drf-auth-token"
+
+
+def _issue_token(user: User) -> str:
+    signer = signing.TimestampSigner(salt=TOKEN_SALT)
+    payload = {"uid": user.id, "iat": int(time.time())}
+    return signer.sign_object(payload)
+
+
+def _user_payload(user: User) -> dict:
+    return {"id": user.id, "username": user.username, "email": user.email}
+
+
+def _authenticate_request(request):
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer "):
+        return None, fail("Authorization header missing or invalid", status_code=401)
+
+    token = header.removeprefix("Bearer ").strip()
+    signer = signing.TimestampSigner(salt=TOKEN_SALT)
+    try:
+        payload = signer.unsign_object(token, max_age=TOKEN_MAX_AGE_SECONDS)
+    except signing.SignatureExpired:
+        return None, fail("Token expired", status_code=401)
+    except signing.BadSignature:
+        return None, fail("Invalid token", status_code=401)
+
+    user_id = payload.get("uid")
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return None, fail("User not found", status_code=401)
+    return user, None
+
+
+def list_transactions(request):
+    if request.method != "GET":
+        return fail("Method not allowed", status_code=405)
+    qs = MpesaTransaction.objects.order_by('-id')[:50]
+    data = [
+        {
+            "id": t.id,
+            "transaction_id": t.transaction_id,
+            "phone": t.phone,
+            "amount": t.amount,
+            "reference": t.reference,
+            "status": getattr(t, 'status', ''),
+            "result_description": getattr(t, 'result_description', ''),
+            "timestamp": getattr(t, 'timestamp', ''),
+        }
+        for t in qs
+    ]
+    return ok("latest transactions", {"items": data, "count": len(data)})
+
+
+@csrf_exempt
+def register_user(request):
+    """Simple JSON-based user registration for JWT-based clients.
+
+    Expects: {"username": str, "password": str, "email": optional}
+    Returns a signed bearer token plus basic user info.
+    """
+    if request.method != "POST":
+        return fail("Method not allowed", status_code=405)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return fail("Invalid JSON", status_code=400)
+
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    email = (payload.get("email") or "").strip()
+
+    if not username or not password:
+        return fail("username and password are required", status_code=400)
+
+    if User.objects.filter(username=username).exists():
+        return fail("username already exists", status_code=409)
+
+    user = User.objects.create_user(username=username, password=password, email=email)
+    token = _issue_token(user)
+    return ok("registered", {"token": token, "user": _user_payload(user)})
+
+
+@csrf_exempt
+def login_user(request):
+    if request.method != "POST":
+        return fail("Method not allowed", status_code=405)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return fail("Invalid JSON", status_code=400)
+
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    if not username or not password:
+        return fail("username and password are required", status_code=400)
+
+    user = authenticate(username=username, password=password)
+    if not user:
+        return fail("Invalid credentials", status_code=401)
+
+    token = _issue_token(user)
+    return ok("authenticated", {"token": token, "user": _user_payload(user)})
+
+
+@csrf_exempt
+def logout_user(request):
+    # Stateless tokens cannot be revoked server-side without a store/blacklist.
+    # Clients should delete their stored token. We return success for symmetry.
+    if request.method != "POST":
+        return fail("Method not allowed", status_code=405)
+    return ok("logged out", {})
+
+
+@csrf_exempt
+def current_user(request):
+    user, error = _authenticate_request(request)
+    if error:
+        return error
+    return ok("current user", {"user": _user_payload(user)})
 
 
 @csrf_exempt
 def initiate_stk_push(request):
     if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
+        return fail("Method not allowed", status_code=405)
 
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+        return fail("Invalid JSON", status_code=400)
 
     phone = data.get("phone")
     amount = data.get("amount")
     reference = data.get("reference", "Payment")
 
     if not phone or not amount:
-        return JsonResponse({"error": "phone and amount are required"}, status=400)
+        return fail("phone and amount are required", status_code=400)
 
     # Validate phone number format
     if not phone.startswith("254") or len(phone) != 12:
-        return JsonResponse({"error": "Invalid phone format. Use 254xxxxxxxxx"}, status=400)
+        return fail("Invalid phone format. Use 254xxxxxxxxx", status_code=400)
 
     try:
         amount = float(amount)
         if amount <= 0:
-            return JsonResponse({"error": "Amount must be greater than 0"}, status=400)
+            return fail("Amount must be greater than 0", status_code=400)
     except ValueError:
-        return JsonResponse({"error": "Amount must be a number"}, status=400)
+        return fail("Amount must be a number", status_code=400)
 
     # Lipana STK Push API endpoint (configurable path)
     api_base = settings.LIPANA_API_BASE.rstrip("/")
@@ -81,18 +231,18 @@ def initiate_stk_push(request):
             logger.error(f"DNS resolution failed for {hostname}: {e}")
             if settings.LIPANA_ENABLE_MOCK:
                 logger.info("Returning mocked STK response due to DNS failure and LIPANA_ENABLE_MOCK=True")
-                return JsonResponse({
+                return ok("Mocked STK push (DNS resolution failed)", {
                     "mock": True,
                     "status": "queued",
-                    "message": "Mocked STK push (DNS resolution failed)",
                     "phone": phone,
                     "amount": int(amount),
                     "reference": reference,
-                }, status=200)
-            return JsonResponse({
-                "error": f"Cannot resolve Lipana API host ({hostname}). Check DNS/network connectivity, set LIPANA_API_BASE to a reachable host, or set LIPANA_SKIP_DNS_CHECK=True.",
-                "details": str(e),
-            }, status=503)
+                })
+            return fail(
+                "Cannot resolve Lipana API host",
+                error=f"host={hostname} details={str(e)}",
+                status_code=503,
+            )
 
     # Create transaction record immediately for instant tracking
     transaction = MpesaTransaction.objects.create(
@@ -114,18 +264,18 @@ def initiate_stk_push(request):
             logger.error(f"Lipana API returned non-JSON response: Status {response.status_code}, Body: {response.text[:200]}")
             if settings.LIPANA_ENABLE_MOCK:
                 logger.info("Returning mocked STK response due to invalid API response and LIPANA_ENABLE_MOCK=True")
-                return JsonResponse({
+                return ok("Mocked STK push (invalid API response)", {
                     "mock": True,
                     "status": "queued",
-                    "message": "Mocked STK push (invalid API response)",
                     "phone": phone,
                     "amount": int(amount),
                     "reference": reference,
-                }, status=200)
-            return JsonResponse({
-                "error": "Lipana API returned invalid response. Check API endpoint configuration.",
-                "details": f"Status {response.status_code}: {response.text[:100]}",
-            }, status=502)
+                })
+            return fail(
+                "Lipana API returned invalid response",
+                error=f"status={response.status_code} body={response.text[:100]}",
+                status_code=502,
+            )
         
         logger.info(f"Lipana API Response: {response.status_code} - {response_data}")
         
@@ -136,58 +286,54 @@ def initiate_stk_push(request):
             transaction.save(update_fields=['transaction_id', 'result_description'])
         
         # Return immediately - don't wait for any other processing
-        return JsonResponse(response_data, status=response.status_code)
+        # Ensure wrapper even if upstream returns custom shape
+        if response.status_code in [200, 201]:
+            return ok("STK push sent", response_data.get("data") or response_data)
+        else:
+            return fail("Upstream error", error=response_data.get("error") or json.dumps(response_data)[:200], status_code=response.status_code)
             
     except requests.exceptions.Timeout:
         logger.error("Lipana API timeout")
         transaction.status = "timeout"
         transaction.result_description = "Request timeout - please try again"
         transaction.save(update_fields=['status', 'result_description'])
-        return JsonResponse({"error": "Request timeout. Try again.", "transaction_id": transaction.id}, status=504)
+        return fail("Request timeout. Try again.", data={"transaction_id": transaction.id}, status_code=504)
     except requests.exceptions.ConnectionError as e:
         logger.error(f"Connection error: {str(e)}")
         root = getattr(e, "__cause__", None)
         name_error = isinstance(root, socket.gaierror) or "NameResolutionError" in str(e)
         if (settings.LIPANA_ENABLE_MOCK and name_error):
             logger.info("Returning mocked STK response due to connection resolution error and LIPANA_ENABLE_MOCK=True")
-            return JsonResponse({
+            return ok("Mocked STK push (connection resolution error)", {
                 "mock": True,
                 "status": "queued",
-                "message": "Mocked STK push (connection resolution error)",
                 "phone": phone,
                 "amount": int(amount),
                 "reference": reference,
-            }, status=200)
+            })
         if name_error:
-            return JsonResponse({
-                "error": f"Cannot resolve Lipana API host ({hostname}). Check DNS/network connectivity, set LIPANA_API_BASE to a reachable host, or set LIPANA_SKIP_DNS_CHECK=True.",
-                "details": str(e),
-            }, status=503)
+            return fail("Cannot resolve Lipana API host", error=f"host={hostname} details={str(e)}", status_code=503)
         transaction.status = "failed"
         transaction.result_description = f"Network error: {str(e)[:100]}"
         transaction.save(update_fields=['status', 'result_description'])
-        return JsonResponse({
-            "error": "Network error. Check your internet connection and Lipana API availability.",
-            "details": str(e),
-            "transaction_id": transaction.id
-        }, status=503)
+        return fail("Network error. Check your internet connection and Lipana API availability.", error=str(e), data={"transaction_id": transaction.id}, status_code=503)
     except requests.exceptions.RequestException as e:
         logger.error(f"Request error: {str(e)}")
         transaction.status = "failed"
         transaction.result_description = f"Request failed: {str(e)[:100]}"
         transaction.save(update_fields=['status', 'result_description'])
-        return JsonResponse({"error": "Upstream request failed", "details": str(e), "transaction_id": transaction.id}, status=502)
+        return fail("Upstream request failed", error=str(e), data={"transaction_id": transaction.id}, status_code=502)
 
 
 @csrf_exempt
 def mpesa_webhook(request):
     if request.method != "POST":
-        return HttpResponse("Mpesa Webhook OK", status=200)
+        return ok("Mpesa Webhook OK")
 
     body = request.body or b""
     signature = request.headers.get("X-Lipana-Signature", "")
     if not signature:
-        return HttpResponse("Missing signature", status=400)
+        return fail("Missing signature", status_code=400)
 
     computed = hmac.new(
         settings.LIPANA_SECRET_KEY.encode(),
@@ -196,16 +342,16 @@ def mpesa_webhook(request):
     ).hexdigest()
 
     if not hmac.compare_digest(computed, signature):
-        return HttpResponse("Invalid signature", status=400)
+        return fail("Invalid signature", status_code=400)
 
     try:
         data = json.loads(body.decode() or "{}")
     except json.JSONDecodeError:
-        return HttpResponse("Invalid JSON", status=400)
+        return fail("Invalid JSON", status_code=400)
 
     transaction_id = data.get("transaction_id")
     if not transaction_id:
-        return HttpResponse("transaction_id is required", status=400)
+        return fail("transaction_id is required", status_code=400)
 
     defaults = {
         "amount": data.get("amount", 0),
@@ -218,5 +364,5 @@ def mpesa_webhook(request):
         defaults=defaults,
     )
 
-    return JsonResponse({"status": "ok", "created": created})
+    return ok("Webhook processed", {"created": created})
 
