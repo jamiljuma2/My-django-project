@@ -25,7 +25,7 @@ SECRET_KEY = _get_setting('DJANGO_SECRET_KEY', default='dev-secret-key-change-in
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["my-django-project-1-0k73.onrender.com"]
+ALLOWED_HOSTS = ["my-django-project-1-0k73.onrender.com", "127.0.0.1", "localhost"]
 if DEBUG:
     # Allow local testing hosts in development
     ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
@@ -76,6 +76,13 @@ if not DEBUG:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = '/static/'
+
+# CORS configuration
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    "https://edu-link-writers.vercel.app"
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TEMPLATES = [
@@ -135,17 +142,14 @@ LOGGING = {
     },
 }
 
-# CORS Configuration for Frontend Integration
-CORS_ALLOWED_ORIGINS = [
-    "https://edu-link-writers.vercel.app"
-]
-
 # Allow credentials (cookies) in cross-origin requests
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [
     "https://edu-link-writers.vercel.app",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
 
 # REST Framework Configuration
