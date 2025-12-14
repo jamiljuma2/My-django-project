@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib import admin
+from django.shortcuts import render
 from mpesa_app.views import (
     current_user,
     health,
@@ -13,6 +14,12 @@ from mpesa_app.views import (
 )
 from django.http import JsonResponse, HttpResponse
 from django.db import connection
+
+def login_page(request):
+    return render(request, 'login.html')
+
+def register_page(request):
+    return render(request, 'register.html')
 
 def status_view(request):
     # Simple health check: verify DB connection and return stats
@@ -38,6 +45,8 @@ def status_view(request):
 
 urlpatterns = [
     path('', home, name='home'),
+    path('login/', login_page, name='login-page'),
+    path('register/', register_page, name='register-page'),
     path('favicon.ico', lambda r: HttpResponse(status=204)),  # Silence favicon requests
     path('health/', health, name='health'),
     path('admin/', admin.site.urls),

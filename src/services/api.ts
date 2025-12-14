@@ -78,35 +78,26 @@ class ApiClient {
     return res.data;
   }
 
-  handleError(err: any) {
-    const message = err?.response?.data?.message || err?.message || 'Request failed';
-    return Promise.reject({
-      status: 'error',
-      message,
-      error: err?.response?.data?.error || null,
-    });
-  }
-  }
-
   // ============ AUTH ENDPOINTS ============
   async login(username: string, password: string) {
-    const response = await this.post<any>('/api/drf-auth/login/', { username, password });
-    // Store token in localStorage for subsequent requests
-    if (response.data?.token) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access', response.data.token);
-      }
+    // Send both username and email fields so email-based logins work
+    const payload = { username, email: username, password };
+    const response = await this.post<any>('/api/drf-auth/login/', payload);
+    if (response.data?.token && typeof window !== 'undefined') {
+      localStorage.setItem('access', response.data.token);
     }
     return response;
   }
 
   async register(username: string, password: string, email: string) {
-    const response = await this.post<any>('/api/drf-auth/register/', { username, password, email });
-    // Store token in localStorage for subsequent requests
-    if (response.data?.token) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access', response.data.token);
-      }
+    const response = await this.post<any>('/api/drf-auth/register/', {
+      username,
+      password,
+      password2: password,
+      email,
+    });
+    if (response.data?.token && typeof window !== 'undefined') {
+      localStorage.setItem('access', response.data.token);
     }
     return response;
   }

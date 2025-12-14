@@ -60,7 +60,22 @@ def _issue_token(user: User) -> str:
 
 
 def _user_payload(user: User) -> dict:
-    return {"id": user.id, "username": user.username, "email": user.email}
+    # Determine role based on user permissions
+    if user.is_superuser:
+        role = "admin"
+    elif user.is_staff:
+        role = "manager"
+    else:
+        role = "user"
+    
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": role,
+        "is_staff": user.is_staff,
+        "is_superuser": user.is_superuser
+    }
 
 
 def _authenticate_request(request):
