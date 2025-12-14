@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: mpesa-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn mpesa_project.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: LIPANA_ENABLE_MOCK
+        value: False
+      - key: LIPANA_SKIP_DNS_CHECK
+        value: False
+      - key: LIPANA_API_BASE
+        value: https://api.lipana.dev
+      - key: LIPANA_STK_PATH
+        value: /v1/transactions/push-stk
+      - key: LIPANA_SECRET_KEY
+        sync: false
+      - key: LIPANA_PUBLISHABLE_KEY
+        sync: false
+    healthCheckPath: /health/
