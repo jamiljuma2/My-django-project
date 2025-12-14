@@ -1,0 +1,10 @@
+
+== STATUS status= 200
+Content-Type: application/json
+X-Correlation-ID: 8b7cc585-b0fd-4b2d-b038-5584fb5efe9b
+{"status": "success", "message": "Backend and DB reachable", "data": {"db": true}}
+
+== TRANSACTIONS status= 200
+Content-Type: application/json
+X-Correlation-ID: 74c207f2-fe14-45d6-a101-9cbb708388ea
+{"status": "success", "message": "latest transactions", "data": {"items": [{"id": 3, "transaction_id": "STK-20251212004228-3903", "phone": "254700686463", "amount": "50.00", "reference": "Order-5546", "status": "completed", "result_description": "The service request is processed successfully.", "timestamp": ""}, {"id": 2, "transaction_id": "STK-20251212004054-6165", "phone": "254700686463", "amount": "50.00", "reference": "Order-9134", "status": "completed", "result_description": "The service request is processed successfully.", "timestamp": ""}, {"id": 1, "transaction_id": "TXN-1765489186.036809", "phone": "254700686463", "amount": "10.00", "reference": "Manual-Test-001", "status": "completed", "result_description": "Payment successful", "timestamp": ""}], "count": 3, "cid": "74c207f2-fe14-45d6-a101-9cbb708388ea"}, "error": null}
