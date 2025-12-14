@@ -121,12 +121,29 @@ def register_user(request):
         return fail("Invalid JSON", status_code=400)
 
     username = (payload.get("username") or "").strip()
-    password = payload.get("password") or payload.get("password1") or ""
-    password_confirm = payload.get("password2") or payload.get("confirm_password") or ""
+    password = (
+        payload.get("password")
+        or payload.get("password1")
+        or payload.get("passwordOne")
+        or ""
+    )
+    password_confirm = (
+        payload.get("password2")
+        or payload.get("confirm_password")
+        or payload.get("confirmPassword")
+        or payload.get("passwordTwo")
+        or payload.get("password_confirmation")
+        or ""
+    )
     email = (payload.get("email") or "").strip()
-    first_name = (payload.get("first_name") or "").strip()
-    last_name = (payload.get("last_name") or "").strip()
-    _phone = (payload.get("phone") or payload.get("phone_number") or "").strip()
+    first_name = (payload.get("first_name") or payload.get("firstName") or "").strip()
+    last_name = (payload.get("last_name") or payload.get("lastName") or "").strip()
+    _phone = (
+        payload.get("phone")
+        or payload.get("phone_number")
+        or payload.get("phoneNumber")
+        or ""
+    ).strip()
 
     if not username or not password:
         return fail("username and password are required", status_code=400)
