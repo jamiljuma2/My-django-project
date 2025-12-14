@@ -106,10 +106,11 @@ def list_transactions(request):
 
 @csrf_exempt
 def register_user(request):
-    """Simple JSON-based user registration for JWT-based clients.
+    """JSON registration for JWT clients.
 
-    Expects: {"username": str, "password": str, "email": optional}
-    Returns a signed bearer token plus basic user info.
+    Accepts: username (required), password or password1/password2 (required),
+    email (optional), first_name (optional), last_name (optional), phone (optional).
+    Returns: token + basic user info.
     """
     if request.method != "POST":
         return fail("Method not allowed", status_code=405)
@@ -120,16 +121,31 @@ def register_user(request):
         return fail("Invalid JSON", status_code=400)
 
     username = (payload.get("username") or "").strip()
-    password = payload.get("password") or ""
+    password = payload.get("password") or payload.get("password1") or ""
+    password_confirm = payload.get("password2") or payload.get("confirm_password") or ""
     email = (payload.get("email") or "").strip()
+    first_name = (payload.get("first_name") or "").strip()
+    last_name = (payload.get("last_name") or "").strip()
+    _phone = (payload.get("phone") or payload.get("phone_number") or "").strip()
 
     if not username or not password:
         return fail("username and password are required", status_code=400)
 
+    # If a confirm password is provided, enforce match
+    if password_confirm and password != password_confirm:
+        return fail("passwords do not match", status_code=400)
+
     if User.objects.filter(username=username).exists():
         return fail("username already exists", status_code=409)
 
-    user = User.objects.create_user(username=username, password=password, email=email)
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+    )
+
     token = _issue_token(user)
     return ok("registered", {"token": token, "user": _user_payload(user)})
 
