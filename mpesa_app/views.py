@@ -177,12 +177,25 @@ def login_user(request):
     except json.JSONDecodeError:
         return fail("Invalid JSON", status_code=400)
 
+    # Accept username or email (snake_case or camelCase)
     username = (payload.get("username") or "").strip()
+    email = (payload.get("email") or payload.get("emailAddress") or "").strip()
     password = payload.get("password") or ""
-    if not username or not password:
-        return fail("username and password are required", status_code=400)
 
-    user = authenticate(username=username, password=password)
+    if not (username or email) or not password:
+        return fail("username (or email) and password are required", status_code=400)
+
+    # If email is provided but username is empty, map email to username for authenticate
+    lookup_username = username
+    if not lookup_username and email:
+        user_obj = User.objects.filter(email=email).first()
+        if user_obj:
+            lookup_username = user_obj.username
+
+    if not lookup_username:
+        return fail("User not found", status_code=404)
+
+    user = authenticate(username=lookup_username, password=password)
     if not user:
         return fail("Invalid credentials", status_code=401)
 
