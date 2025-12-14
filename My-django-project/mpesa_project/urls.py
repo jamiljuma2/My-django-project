@@ -11,7 +11,7 @@ from mpesa_app.views import (
     mpesa_webhook,
     register_user,
 )
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import connection
 
 def status_view(request):
@@ -38,6 +38,7 @@ def status_view(request):
 
 urlpatterns = [
     path('', home, name='home'),
+    path('favicon.ico', lambda r: HttpResponse(status=204)),  # Silence favicon requests
     path('health/', health, name='health'),
     path('admin/', admin.site.urls),
     path('api/stk-push/', initiate_stk_push, name='stk-push'),
